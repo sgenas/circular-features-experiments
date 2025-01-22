@@ -239,7 +239,7 @@ if __name__ == "__main__":
 
     # Set up the experiments to run here
     for experiment in [WEEKDAY_CONFIG_VERY]:
-        model_config = GEMMA_9B_CONFIG
+        model_config = GEMMA_2B_CONFIG
         logging.info("=" * 100)  # Separator for each experiment
         logging.info(f"New script run started at {datetime.now()}")
         logging.info(
