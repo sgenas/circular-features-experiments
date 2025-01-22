@@ -8,4 +8,7 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-    CMD ["bash", "-c", "git clone your-github-repo-url && cd repo-name && pip3 install -r requirements.txt && bash"]
+RUN git clone https://github.com/sgenas/circular-features-experiments.git
+WORKDIR /circular-features-experiments
+RUN pip3 install -r requirements.txt
+CMD ["bash"]
