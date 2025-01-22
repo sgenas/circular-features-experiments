@@ -1,0 +1,8 @@
+web/
+__pycache__/
+*.pyc
+.git/
+.env
+.DS_Store
+
+run_history.log

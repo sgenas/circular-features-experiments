@@ -1,0 +1,7 @@
+media/
+
+run_history.log
+
+__pycache__/
+
+.DS_Store

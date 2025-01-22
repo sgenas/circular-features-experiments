@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PCA Scatter Plot</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/inter-ui/3.19.3/inter.css" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        .tooltip {
+            position: absolute;
+            padding: 8px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 12px;
+        }
+        .point {
+            fill-opacity: 0.8;
+            stroke: #fff;
+            stroke-width: 1px;
+        }
+        .point:hover {
+            fill-opacity: 1;
+        }
+        .label {
+            font-size: 10px;
+            pointer-events: none;
+        }
+        .zero-line {
+            stroke: #000;
+            stroke-dasharray: 4;
+            stroke-width: 1px;
+            opacity: 0.3;
+        }
+        .axis-label {
+            font-size: 14px;
+        }
+        .plot-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        .layer-display {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        input[type="range"] {
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slider-container">
+        <div class="layer-display">Layer: <span id="layer-number">5</span></div>
+        <input type="range" id="layer-slider" min="5" max="15" step="5" value="5">
+    </div>
+    <div id="plot"></div>
+    <script>
+        // Combined data for all layers
+        const layerData = {
+            5: {
+                "model_config": "Gemma-2-2B",
+                "display_labels": ["C","D","E","F","G","A","B","Flat C","Flat D","Flat E","Flat F","Flat G","Flat A","Flat B","Sharp C","Sharp D","Sharp E","Sharp F","Sharp G","Sharp A","Sharp B"],
+                "states_pca": [[13.983808517456055,-27.589473724365234],[1.7470111846923828,3.7509212493896484],[5.697349548339844,0.3209543228149414],[10.97089958190918,21.396366119384766],[16.22344398498535,3.200038433074951],[-38.556541442871094,-2.8048744201660156],[-10.065754890441895,1.7260375022888184],[17.329057693481445,-26.300621032714844],[7.351268768310547,2.838139057159424],[12.122732162475586,-0.8524055480957031],[15.819341659545898,20.954221725463867],[21.43177604675293,1.7176685333251953],[-22.90058708190918,-4.710543632507324],[-1.1798553466796875,0.08976173400878906],[17.211942672729492,-25.70840835571289],[7.985864639282227,2.9256467819213867],[12.451932907104492,-0.2645559310913086],[15.686452865600586,20.971031188964844],[19.846208572387695,3.84959077835083],[-25.024677276611328,-4.686810493469238],[-1.6716461181640625,1.1692676544189453]]
+            },
+            10: {
+                "model_config": "Gemma-2-2B",
+                "display_labels": ["C","D","E","F","G","A","B","Flat C","Flat D","Flat E","Flat F","Flat G","Flat A","Flat B","Sharp C","Sharp D","Sharp E","Sharp F","Sharp G","Sharp A","Sharp B"],
+                "states_pca": [[-11.769229888916016,-12.24549388885498],[-3.9523468017578125,12.715187072753906],[-19.866092681884766,-17.346187591552734],[-12.784263610839844,8.900644302368164],[-20.470779418945312,-5.318785667419434],[61.13273620605469,-10.034363746643066],[7.710136413574219,23.329044342041016],[-22.782917022705078,-11.81777286529541],[-17.08069610595703,6.013975620269775],[-24.578651428222656,-17.496978759765625],[-22.40998077392578,4.80905294418335],[-24.410888671875,-5.762070655822754],[1.7034492492675781,-12.010289192199707],[-14.663898468017578,12.726784706115723],[-23.00853729248047,-14.194581031799316],[-15.977104187011719,5.201909065246582],[-24.459495544433594,-17.58437728881836],[-20.52002716064453,4.426302909851074],[-21.942230224609375,-6.643305778503418],[19.990947723388672,-7.717053413391113],[-12.294219970703125,12.639167785644531]]
+            },
+            15: {
+                "model_config": "Gemma-2-2B",
+                "display_labels": ["C","D","E","F","G","A","B","Flat C","Flat D","Flat E","Flat F","Flat G","Flat A","Flat B","Sharp C","Sharp D","Sharp E","Sharp F","Sharp G","Sharp A","Sharp B"],
+                "states_pca": [[-17.032869338989258,26.950885772705078],[-8.922719955444336,-17.299457550048828],[-19.712461471557617,20.853137969970703],[-15.161565780639648,-14.038749694824219],[-19.233545303344727,2.5010528564453125],[80.72399139404297,6.616508483886719],[-0.6606807708740234,-25.583209991455078],[-21.223417282104492,28.875972747802734],[-19.504594802856445,-0.9862327575683594],[-19.85948371887207,21.24521255493164],[-22.388185501098633,0.8734169006347656],[-20.404130935668945,10.527374267578125],[-0.04324150085449219,18.798171997070312],[-16.294485092163086,-3.053295135498047],[-18.18364906311035,32.11565399169922],[-16.16874122619629,-0.5459442138671875],[-16.046560287475586,20.546897888183594],[-18.840185165405273,-0.2764778137207031],[-16.438501358032227,9.951255798339844],[22.00054359436035,14.245281219482422],[-13.228616714477539,-5.264896392822266]]
+            }
+        };
+
+        // Set up dimensions
+        const width = 800;
+        const height = 600;
+        const margin = {top: 60, right: 50, bottom: 50, left: 50};
+
+        // Create SVG
+        const svg = d3.select("#plot")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Create a group for zoom
+        const g = svg.append("g");
+
+        // Add zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 5])
+            .on("zoom", zoomed);
+
+        svg.call(zoom);
+
+        // Create color scale based on note letter
+        const colorScale = d3.scaleOrdinal()
+            .domain(['C', 'D', 'E', 'F', 'G', 'A', 'B'])
+            .range(d3.schemeCategory10);
+
+        // Helper functions
+        const getBaseNote = label => label.split(' ').pop().charAt(0);
+        const isBaseNote = label => label.length === 1;
+
+        // Create tooltip
+        const tooltip = d3.select("body")
+            .append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        function updateVisualization(layer) {
+            const data = layerData[layer];
+            
+            // Update scales
+            const xScale = d3.scaleLinear()
+                .domain(d3.extent(data.states_pca, d => d[0]))
+                .range([margin.left, width - margin.right])
+                .nice();
+
+            const yScale = d3.scaleLinear()
+                .domain(d3.extent(data.states_pca, d => d[1]))
+                .range([height - margin.bottom, margin.top])
+                .nice();
+
+            // Update axes
+            const xAxis = d3.axisBottom(xScale);
+            const yAxis = d3.axisLeft(yScale);
+
+            // Clear previous elements
+            g.selectAll("*").remove();
+
+
+
+            // Add axes groups first (to be behind zero lines and points)
+            const xAxisGroup = g.append("g")
+                .attr("class", "x-axis")
+                .attr("transform", `translate(0,${height - margin.bottom})`)
+                .call(xAxis);
+
+            const yAxisGroup = g.append("g")
+                .attr("class", "y-axis")
+                .attr("transform", `translate(${margin.left},0)`)
+                .call(yAxis);
+
+            // Add zero lines
+            const zeroLines = g.append("g")
+                .attr("class", "zero-lines");
+
+            zeroLines.append("line")
+                .attr("class", "zero-line")
+                .attr("x1", margin.left)
+                .attr("x2", width - margin.right)
+                .attr("y1", yScale(0))
+                .attr("y2", yScale(0));
+
+            zeroLines.append("line")
+                .attr("class", "zero-line")
+                .attr("x1", xScale(0))
+                .attr("x2", xScale(0))
+                .attr("y1", margin.top)
+                .attr("y2", height - margin.bottom);
+
+            // Create a group for the points and labels
+            const pointsGroup = g.append("g")
+                .attr("class", "points-group");
+
+            // Add points
+            pointsGroup.selectAll("circle")
+                .data(data.states_pca)
+                .enter()
+                .append("circle")
+                .attr("class", "point")
+                .attr("cx", d => xScale(d[0]))
+                .attr("cy", d => yScale(d[1]))
+                .attr("r", (d, i) => isBaseNote(data.display_labels[i]) ? 10 : 8)
+                .attr("fill", (d, i) => colorScale(getBaseNote(data.display_labels[i])))
+                .on("mouseover", function(event, d) {
+                    const index = data.states_pca.indexOf(d);
+                    const label = data.display_labels[index];
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("r", isBaseNote(label) ? 12 : 10);
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html(label)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", function(event, d) {
+                    const index = data.states_pca.indexOf(d);
+                    const label = data.display_labels[index];
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("r", isBaseNote(label) ? 10 : 8);
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                });
+
+            // Add labels
+            pointsGroup.selectAll(".label")
+                .data(data.states_pca)
+                .enter()
+                .append("text")
+                .attr("class", "label")
+                .attr("x", d => xScale(d[0]))
+                .attr("y", d => yScale(d[1]) - 12)
+                .attr("text-anchor", "middle")
+                .text((d, i) => data.display_labels[i]);
+
+            // Reset zoom
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity
+            );
+        }
+
+        // Add title and axis labels (outside the updateVisualization function as they don't change)
+        svg.append("text")
+            .attr("class", "plot-title")
+            .attr("x", width / 2)
+            .attr("y", margin.top / 2)
+            .attr("text-anchor", "middle")
+            .text(layerData[5].model_config);
+
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("x", width / 2)
+            .attr("y", height - margin.bottom / 3)
+            .attr("text-anchor", "middle")
+            .text("PCA Component 1");
+
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -(height / 2))
+            .attr("y", margin.left / 3)
+            .attr("text-anchor", "middle")
+            .text("PCA Component 2");
+
+        // Add legend
+        const legend = svg.append("g")
+            .attr("text-anchor", "start")
+            .selectAll("g")
+            .data(['C', 'D', 'E', 'F', 'G', 'A', 'B'])
+            .enter().append("g")
+            .attr("transform", (d, i) => `translate(${width - margin.right},${margin.top + i * 20})`);
+
+        legend.append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", 5)
+            .attr("fill", colorScale);
+
+        legend.append("text")
+            .attr("x", 10)
+            .attr("y", 3)
+            .text(d => d);
+
+        // Zoom function
+        function zoomed(event) {
+            const transform = event.transform;
+            
+            // Transform the main content
+            g.selectAll(".points-group").attr("transform", transform);
+            g.selectAll(".zero-lines").attr("transform", transform);
+            
+            // Update axes with new scale
+            const xScaleT = transform.rescaleX(xScale);
+            const yScaleT = transform.rescaleY(yScale);
+            
+            xAxisGroup.call(xAxis.scale(xScaleT));
+            yAxisGroup.call(yAxis.scale(yScaleT));
+            
+            // Update zero lines position
+            zeroLines.select("line.zero-line:nth-child(1)")
+                .attr("y1", yScaleT(0))
+                .attr("y2", yScaleT(0));
+                
+            zeroLines.select("line.zero-line:nth-child(2)")
+                .attr("x1", xScaleT(0))
+                .attr("x2", xScaleT(0));
+        }
+
+        // Initialize visualization
+        updateVisualization(5);
+
+        // Add slider functionality
+        const slider = document.getElementById('layer-slider');
+        const layerDisplay = document.getElementById('layer-number');
+
+        slider.addEventListener('input', function() {
+            const layer = parseInt(this.value);
+            layerDisplay.textContent = layer;
+            updateVisualization(layer);
+        });
+    </script>
+</body
