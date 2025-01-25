@@ -34,6 +34,7 @@ from config import (
     MISTRAL_CONFIG,
     GEMMA_2B_CONFIG,
     GEMMA_9B_CONFIG,
+    GEMMA_27B_CONFIG,
 )
 from plotting import create_plot, PlotConfig
 
@@ -52,6 +53,12 @@ logger = logging.getLogger("continuity_experiments")
 def load_model(config: ModelConfig) -> tuple[AutoTokenizer, AutoModelForCausalLM]:
     """Load a model and its tokenizer."""
     try:
+        # Add debug info about available GPUs
+        logger.info(f"Available GPUs: {torch.cuda.device_count()}")
+        logger.info(f"GPU Memory per device:")
+        for i in range(torch.cuda.device_count()):
+            logger.info(f"GPU {i}: {torch.cuda.get_device_properties(i).total_memory / 1024**3:.2f} GB")
+
         logger.info(f"Loading model: {config.name}")
         tokenizer = AutoTokenizer.from_pretrained(
             config.hf_name if config.tokenizer_name is None else config.tokenizer_name
@@ -59,6 +66,7 @@ def load_model(config: ModelConfig) -> tuple[AutoTokenizer, AutoModelForCausalLM
         model = AutoModelForCausalLM.from_pretrained(
             config.hf_name, device_map=config.device, cache_dir=config.cache_dir
         )
+        logger.info(f"Model is on device: {model.device}")
         return tokenizer, model
     except Exception as e:
         raise RuntimeError(f"Failed to load model {config.name}: {str(e)}")
@@ -94,9 +102,13 @@ def get_hidden_states(
 ) -> np.ndarray:
     """Extract hidden states from the model for given prompts."""
     hidden_states = []
+    device = model.device  # Get the model's device
+
     with torch.no_grad():
         for prompt in prompts:
             inputs = tokenizer(prompt, return_tensors="pt")
+            # Move inputs to the same device as the model
+            inputs = {k: v.to(device) for k, v in inputs.items()}
             outputs = model(**inputs, output_hidden_states=True)
             hidden_states.append(
                 [  # Output last token hidden state for each layer
@@ -238,7 +250,18 @@ if __name__ == "__main__":
         return int(time // 60), int(time % 60)
 
     # Set up the experiments to run here
-    for experiment in [WEEKDAY_CONFIG_VERY]:
+    all_experiments = [
+        COLOUR_CONFIG,
+        HSV_COLOUR_CONFIG,
+        HSV_COLOUR_TERTIARY_CONFIG,
+        WEEKDAY_CONFIG_VERY,
+        WEEKDAY_CONFIG_EXTREMELY,
+        MONTH_CONFIG,
+        MUSICAL_NOTE_CONFIG,
+        MUSICAL_NOTE_CONFIG_MOD,
+    ]
+
+    for experiment in all_experiments:
         model_config = GEMMA_2B_CONFIG
         logging.info("=" * 100)  # Separator for each experiment
         logging.info(f"New script run started at {datetime.now()}")
