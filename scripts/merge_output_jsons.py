@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from config import (
+from src.config import (
     ModelConfig,
     ExperimentConfig,
     COLOUR_CONFIG,
@@ -91,9 +91,7 @@ def main():
                 experiment,
             )
             if not files:
-                print(
-                    f"No files found for {model.name} - {experiment.name}"
-                )
+                print(f"No files found for {model.name} - {experiment.name}")
                 continue
 
             # Merge the files
@@ -105,8 +103,7 @@ def main():
 
             # Save merged data
             output_path = (
-                output_dir
-                / f"{model.name.lower()}_{experiment.name}_merged.json"
+                output_dir / f"{model.name.lower()}_{experiment.name}_merged.json"
             )
             save_json_file(merged_data, output_path)
             print(f"Merged data saved to {output_path}")
