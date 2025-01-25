@@ -370,3 +370,11 @@ GEMMA_9B_CONFIG = ModelConfig(
     layers_to_plot=[i for i in range(1, 43)],
     device="cpu",
 )
+
+GEMMA_27B_CONFIG = ModelConfig(
+    name="Gemma-2-27B",
+    short_name="gemma-27b",
+    hf_name="google/gemma-2-27B",
+    layers_to_plot=[i for i in range(1, 47)],
+    device="auto",
+)
