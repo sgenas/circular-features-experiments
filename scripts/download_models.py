@@ -1,4 +1,4 @@
-"""Script to download models from Hugging Face and cache them locally."""
+"""Script to download models from HuggingFace and cache them locally."""
 
 import time
 import logging

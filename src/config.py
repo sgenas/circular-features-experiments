@@ -85,7 +85,7 @@ class ExperimentConfig:
         )
 
 
-# %% Experiment configs ------------------------------------------------------------------
+# %% Experiment configs ----------------------------------------------------------------
 
 WEEKDAY_CONFIG_VERY = ExperimentConfig(
     name="weekday_very",
@@ -193,6 +193,7 @@ COLOUR_CONFIG = ExperimentConfig(
 )
 
 HSV_COLOUR_CONFIG = ExperimentConfig(
+    # Tried having two reds, didn't work out
     name="hsv_colour",
     base_items=[
         "HSV 0 100 100 colour values",  # Red
@@ -210,10 +211,10 @@ HSV_COLOUR_CONFIG = ExperimentConfig(
 )
 
 HSV_COLOUR_CONFIG = ExperimentConfig(
-    name="hsv_colour_one_red",
+    name="hsv_colour_one_red", # Should probably have been the one named hsv_colour_primary, but now it's all too late
     base_items=[
-        "HSV 0 100 100 colour values",  # Red
-        "HSV 60 100 100 colour values",  # Yellow
+        "HSV 0 100 100 colour values",    # Red
+        "HSV 60 100 100 colour values",   # Yellow
         "HSV 120 100 100 colour values",  # Green
         "HSV 180 100 100 colour values",  # Cyan
         "HSV 240 100 100 colour values",  # Blue
@@ -235,10 +236,10 @@ HSV_COLOUR_CONFIG = ExperimentConfig(
 HSV_COLOUR_TERTIARY_CONFIG = ExperimentConfig(
     name="hsv_colour_tertiary",
     base_items=[
-        "HSV 0 100 100 colour values",  # Red
-        "HSV 30 100 100 colour values",  # Orange
-        "HSV 60 100 100 colour values",  # Yellow
-        "HSV 90 100 100 colour values",  # Yellow-Green / Chartreuse
+        "HSV 0 100 100 colour values",    # Red
+        "HSV 30 100 100 colour values",   # Orange
+        "HSV 60 100 100 colour values",   # Yellow
+        "HSV 90 100 100 colour values",   # Yellow-Green / Chartreuse
         "HSV 120 100 100 colour values",  # Green
         "HSV 150 100 100 colour values",  # Green-Cyan / Spring Green
         "HSV 180 100 100 colour values",  # Cyan
