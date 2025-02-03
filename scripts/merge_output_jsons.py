@@ -41,22 +41,27 @@ def get_experiment_files(
 
 
 def merge_json_files(files: list[Path]) -> dict[str, Any]:
-    """Merge multiple JSON files into a single dictionary with layers as main keys"""
+    """Merge multiple JSON files into a single dictionary with model names as top-level keys and layers as second-level keys"""
     merged_data = {}
 
-    # Process each file and organize by layer
+    # Process each file and organize by model and layer
     for file_path in sorted(files, key=lambda x: x.name):
         data = load_json_file(file_path)
 
-        # Extract layer number from filename
+        # Extract model name and layer number from filename
+        model_name = file_path.parent.name
         layer = int("".join(filter(str.isdigit, file_path.stem.split("layer")[-1])))
+
+        # Initialize model entry if it doesn't exist
+        if model_name not in merged_data:
+            merged_data[model_name] = {}
 
         # Remove layer from the data if it exists (since it's now the key in the main dict)
         if "layer" in data:
             del data["layer"]
 
-        # Use layer as the main key
-        merged_data[f"layer_{layer}"] = data
+        # Use layer as the second-level key
+        merged_data[model_name][f"layer_{layer}"] = data
 
     return merged_data
 
@@ -82,31 +87,32 @@ def main():
     models = [GEMMA_2B_CONFIG, GEMMA_9B_CONFIG, GEMMA_27B_CONFIG]
 
     # Process each experiment config for each model config
-    for model in models:
-        for experiment in experiments:
+    for experiment in experiments:
+        files = []
+        for model in models:
             # Get all JSON files for this experiment and model
-            files = get_experiment_files(
+            files += get_experiment_files(
                 output_data_path / experiment.data_output_dir / model.name,
                 model,
                 experiment,
             )
-            if not files:
-                print(f"No files found for {model.name} - {experiment.name}")
-                continue
+        if not files:
+            print(f"No files found for - {experiment.name}")
+            continue
 
-            # Merge the files
-            merged_data = merge_json_files(files)
+        # Merge the files
+        merged_data = merge_json_files(files)
 
-            # Create output directory if it doesn't exist
-            output_dir = output_data_path / "merged_output_data"
-            output_dir.mkdir(parents=True, exist_ok=True)
+        # Create output directory if it doesn't exist
+        output_dir = output_data_path / "merged_output_data"
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-            # Save merged data
-            output_path = (
-                output_dir / f"{model.name.lower()}_{experiment.name}_merged.json"
-            )
-            save_json_file(merged_data, output_path)
-            print(f"Merged data saved to {output_path}")
+        # Save merged data
+        output_path = (
+            output_dir / f"{experiment.name}_merged.json"
+        )
+        save_json_file(merged_data, output_path)
+        print(f"Merged data saved to {output_path}")
 
 
 if __name__ == "__main__":
